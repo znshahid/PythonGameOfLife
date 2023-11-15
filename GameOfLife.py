@@ -125,11 +125,13 @@ def main():
                 
                 if event.key == pygame.K_c:
                     positions = set()
+                    dead_positions = set()
                     playing = False
                     count = 0
                 
                 if event.key == pygame.K_g:
                     positions = gen(random.randrange(2, 5) * GRID_WIDTH)
+                    dead_positions = set()
     
         screen.fill(GREY)
         draw_grid(positions, dead_positions)
