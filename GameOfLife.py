@@ -22,12 +22,17 @@ clock = pygame.time.Clock()
 def gen(num):
     return set([(random.randrange(0, GRID_HEIGHT), random.randrange(0, GRID_WIDTH)) for _ in range(num)])
 
-def draw_grid(positions):
+def draw_grid(positions, dead_positions):
     for position in positions:
         col, row = position
         top_left = (col * TILE_SIZE, row * TILE_SIZE)
         pygame.draw.rect(screen, YELLOW, (*top_left, TILE_SIZE, TILE_SIZE))
 
+    for position in dead_positions:
+        col, row = position
+        top_left = (col * TILE_SIZE, row * TILE_SIZE)
+        pygame.draw.rect(screen, RED, (*top_left, TILE_SIZE, TILE_SIZE))
+        
     for row in range(GRID_HEIGHT):
         pygame.draw.line(screen, BLACK, (0, row * TILE_SIZE), (WIDTH, row * TILE_SIZE))
 
@@ -47,6 +52,8 @@ def adjust_grid(positions):
 
         if len(neighbors) in [2, 3]:
             new_positions.add(position)
+        else:
+            dead_positions.add(position)
     
     for position in all_neighbors:
         neighbors = get_neighbors(position)
@@ -54,8 +61,10 @@ def adjust_grid(positions):
 
         if len(neighbors) == 3:
             new_positions.add(position)
+        elif position in positions:
+            dead_positions.add(position)
     
-    return new_positions
+    return new_positions, dead_positions
 
 def get_neighbors(pos):
     x, y = pos
@@ -80,6 +89,7 @@ def main():
     update_freq = 120
 
     positions = set()
+    dead_positions = set()
     while running:
         clock.tick(FPS)
 
@@ -88,7 +98,9 @@ def main():
         
         if count >= update_freq:
             count = 0
-            positions = adjust_grid(positions)
+            new_positions, newly_dead_positions = adjust_grid(positions)
+            dead_positions = newly_dead_positions
+            positions = new_positions
 
         pygame.display.set_caption("Playing" if playing else "Paused")
 
@@ -120,7 +132,7 @@ def main():
                     positions = gen(random.randrange(2, 5) * GRID_WIDTH)
     
         screen.fill(GREY)
-        draw_grid(positions)
+        draw_grid(positions, dead_positions)
         pygame.display.update()
 
 
